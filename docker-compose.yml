@@ -1,0 +1,54 @@
+version: "2"
+
+services:
+  php:
+    build: ./php/
+    ports:
+      - 80:80
+    links:
+      - mailcatcher
+    networks:
+      - database
+      - server
+    depends_on:
+      - mysql
+    volumes:
+      - "${PROJECT_ROOT}:/var/www/html"
+
+  mysql:
+    image: mysql:latest
+    volumes:
+      - data:/var/lib/mysql
+    networks:
+      - database
+      - server
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${DB_NAME}"
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8080:80
+    networks:
+      - database
+    depends_on:
+      - mysql
+    environment:
+      PMA_HOST: MYSQL_PASSWORD
+
+  mailcatcher:
+    image: spacemaniac/mailcatcher:alpine
+    networks:
+      - server
+    ports:
+      - 1080:1080
+
+volumes:
+  data:
+
+networks:
+  database:
+  server:
